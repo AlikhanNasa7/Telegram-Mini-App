@@ -3,6 +3,9 @@ from sqlalchemy.orm import Session
 from ..repositories.courses import CoursesRepository
 from ..schemas.courses import CourseCreate, CourseUpdate, CourseOut
 from ..database.base import get_db
+from ..llm import course_creator
+import json
+
 
 router = APIRouter()
 courses_repository = CoursesRepository()
@@ -10,8 +13,8 @@ courses_repository = CoursesRepository()
 
 # Get all courses belonging to the user
 @router.get("/", response_model=list[CourseOut])
-def get_user_courses(user_id: int, db: Session = Depends(get_db)):
-    courses = courses_repository.get_user_courses(db, user_id)
+def get_courses(db: Session = Depends(get_db)):
+    courses = courses_repository.get_courses(db)
     if not courses:
         raise HTTPException(status_code=404, detail="No courses found")
     return courses
@@ -19,8 +22,8 @@ def get_user_courses(user_id: int, db: Session = Depends(get_db)):
 
 # Get a specific course belonging to the user
 @router.get("/{course_id}", response_model=CourseOut)
-def get_course(user_id: int, course_id: int, db: Session = Depends(get_db)):
-    course = courses_repository.get_user_course_by_id(db, user_id, course_id)
+def get_course(course_id: int, db: Session = Depends(get_db)):
+    course = courses_repository.get_course_by_id(db, course_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     return course
@@ -54,3 +57,20 @@ def update_course(
 def delete_course(user_id: int, course_id: int, db: Session = Depends(get_db)):
     courses_repository.delete_course(db, user_id, course_id)
     return {"detail": "Course deleted successfully"}
+
+
+@router.post("/generate")
+def generate_course(
+    user_id: int, learning_field: str, description: str, db: Session = Depends(get_db)
+):
+    if description == "":
+        raise HTTPException(status_code=400, detail="Description cannot be empty")
+
+    if learning_field == "":
+        raise HTTPException(status_code=400, detail="Course name cannot be empty")
+
+    course_JSON = course_creator.create_course(learning_field, description)
+
+    course_data = json.loads(course_JSON)
+
+    return course_data

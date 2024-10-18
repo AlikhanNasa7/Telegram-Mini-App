@@ -7,9 +7,7 @@ from ..schemas.quizzes import QuizCreate, QuizUpdate
 
 
 class QuizzesRepository:
-    def get_user_lesson_quizzes(
-        self, db: Session, user_id: int, lesson_id: int
-    ) -> list[Quiz]:
+    def get_lesson_quizzes(self, db: Session, lesson_id: int) -> list[Quiz]:
         quizzes = db.query(Quiz).filter(Quiz.lesson_id == lesson_id).all()
         if not quizzes:
             raise HTTPException(
@@ -17,14 +15,8 @@ class QuizzesRepository:
             )
         return quizzes
 
-    def get_user_lesson_quiz(
-        self, db: Session, user_id: int, lesson_id: int, quiz_id: int
-    ) -> Quiz:
-        quiz = (
-            db.query(Quiz)
-            .filter(Quiz.lesson_id == lesson_id, Quiz.quiz_id == quiz_id)
-            .first()
-        )
+    def get_quiz(self, db: Session, quiz_id: int) -> Quiz:
+        quiz = db.query(Quiz).filter(Quiz.quiz_id == quiz_id).first()
         if not quiz:
             raise HTTPException(status_code=404, detail="Quiz not found")
         return quiz
@@ -32,7 +24,6 @@ class QuizzesRepository:
     def create_quiz(
         self,
         db: Session,
-        user_id: int,
         lesson_id: int,
         quiz_data: QuizCreate,
     ) -> Quiz:
@@ -67,13 +58,11 @@ class QuizzesRepository:
     def update_quiz(
         self,
         db: Session,
-        user_id: int,
-        lesson_id: int,
         quiz_id: int,
         quiz_data: QuizUpdate,
     ) -> Quiz:
         try:
-            quiz = self.get_user_lesson_quiz(db, user_id, lesson_id, quiz_id)
+            quiz = self.get_quiz(db, quiz_id)
             for field, value in quiz_data.model_dump(exclude_unset=True).items():
                 setattr(quiz, field, value)
             db.commit()
@@ -85,9 +74,9 @@ class QuizzesRepository:
             )
         return quiz
 
-    def delete_quiz(self, db: Session, user_id: int, lesson_id: int, quiz_id: int):
+    def delete_quiz(self, db: Session, quiz_id: int):
         try:
-            quiz = self.get_user_lesson_quiz(db, user_id, lesson_id, quiz_id)
+            quiz = self.get_quiz(db, quiz_id)
             if not quiz:
                 raise HTTPException(status_code=404, detail="Quiz not found")
             db.delete(quiz)

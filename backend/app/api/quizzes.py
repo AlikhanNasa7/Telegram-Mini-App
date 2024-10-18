@@ -12,81 +12,71 @@ progress_repository = UserProgressRepository()
 
 
 # Get all quizzes within a lesson
-@router.get("/", response_model=list[QuizOut])
+@router.get("lessons/{lesson_id}/quizzes", response_model=list[QuizOut])
 def get_lesson_quizzes(
     lesson_id: int,
-    user_id: int,
     db: Session = Depends(get_db),
 ):
     """
     Get all quizzes within a specific lesson.
     """
-    quizzes = quizzes_repository.get_user_lesson_quizzes(db, user_id, lesson_id)
+    quizzes = quizzes_repository.get_lesson_quizzes(db, lesson_id)
     if not quizzes:
         raise HTTPException(status_code=404, detail="No quizzes found in this lesson")
     return quizzes
 
 
 # Get a specific quiz by quiz_id
-@router.get("/{quiz_id}", response_model=QuizOut)
+@router.get("quizzes/{quiz_id}", response_model=QuizOut)
 def get_quiz(
-    lesson_id: int,
     quiz_id: int,
-    user_id: int,
     db: Session = Depends(get_db),
 ):
     """
     Get a specific quiz within a lesson.
     """
-    quiz = quizzes_repository.get_user_lesson_quiz(db, user_id, lesson_id, quiz_id)
+    quiz = quizzes_repository.get_user_lesson_quiz(db, quiz_id)
     return quiz
 
 
 # Create a new quiz in a lesson
-@router.post("/", response_model=QuizOut)
+@router.post("lessons/{lesson_id}/quizzes", response_model=QuizOut)
 def create_quiz(
     lesson_id: int,
-    user_id: int,
     quiz_data: QuizCreate,
     db: Session = Depends(get_db),
 ):
     """
     Create a new quiz within a lesson.
     """
-    new_quiz = quizzes_repository.create_quiz(db, user_id, lesson_id, quiz_data)
+    new_quiz = quizzes_repository.create_quiz(db, lesson_id, quiz_data)
     return new_quiz
 
 
 # Update a quiz
-@router.patch("/{quiz_id}", response_model=QuizOut)
+@router.patch("quizzes/{quiz_id}", response_model=QuizOut)
 def update_quiz(
-    lesson_id: int,
     quiz_id: int,
-    user_id: int,
     quiz_data: QuizUpdate,
     db: Session = Depends(get_db),
 ):
     """
     Update a quiz within a lesson.
     """
-    updated_quiz = quizzes_repository.update_quiz(
-        db, user_id, lesson_id, quiz_id, quiz_data
-    )
+    updated_quiz = quizzes_repository.update_quiz(db, quiz_id, quiz_data)
     return updated_quiz
 
 
 # Delete a quiz
-@router.delete("/{quiz_id}")
+@router.delete("quizzes/{quiz_id}")
 def delete_quiz(
-    lesson_id: int,
     quiz_id: int,
-    user_id: int,
     db: Session = Depends(get_db),
 ):
     """
     Delete a quiz within a lesson.
     """
-    quizzes_repository.delete_quiz(db, user_id, lesson_id, quiz_id)
+    quizzes_repository.delete_quiz(db, quiz_id)
     return {"detail": "Quiz deleted successfully"}
 
 

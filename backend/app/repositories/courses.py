@@ -6,17 +6,11 @@ from ..schemas.courses import CourseCreate, CourseUpdate
 
 
 class CoursesRepository:
-    def get_user_courses(self, db: Session, user_id: int) -> list[Course]:
-        return db.query(Course).filter(Course.user_id == user_id).all()
+    def get_courses(self, db: Session) -> list[Course]:
+        return db.query(Course).all()
 
-    def get_user_course_by_id(
-        self, db: Session, user_id: int, course_id: int
-    ) -> Course:
-        course = (
-            db.query(Course)
-            .filter(Course.user_id == user_id, Course.course_id == course_id)
-            .first()
-        )
+    def get_course_by_id(self, db: Session, course_id: int) -> Course:
+        course = db.query(Course).filter(Course.course_id == course_id).first()
         if not course:
             raise HTTPException(status_code=404, detail="Course not found")
         return course
@@ -44,7 +38,12 @@ class CoursesRepository:
         self, db: Session, user_id: int, course_id: int, course_data: CourseUpdate
     ) -> Course:
         try:
-            course = self.get_user_course_by_id(db, user_id, course_id)
+            course = self.get_course_by_id(db, course_id)
+            if course.user_id != user_id:
+                raise HTTPException(
+                    status_code=403,
+                    detail="User is not authorized to update this course",
+                )
             for field, value in course_data.model_dump(exclude_unset=True).items():
                 setattr(course, field, value)
             db.commit()
@@ -58,7 +57,12 @@ class CoursesRepository:
 
     def delete_course(self, db: Session, user_id: int, course_id: int):
         try:
-            course = self.get_user_course_by_id(db, user_id, course_id)
+            course = self.get_course_by_id(db, course_id)
+            if course.user_id != user_id:
+                raise HTTPException(
+                    status_code=403,
+                    detail="User is not authorized to delete this course",
+                )
             db.delete(course)
             db.commit()
         except IntegrityError:

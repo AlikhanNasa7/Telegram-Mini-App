@@ -7,25 +7,17 @@ from ..schemas.modules import ModuleCreate, ModuleUpdate
 
 
 class ModulesRepository:
-    def get_user_course_modules(
-        self, db: Session, user_id: int, course_id: int
-    ) -> list[Module]:
+    def get_course_modules(self, db: Session, course_id: int) -> list[Module]:
         return db.query(Module).filter(Module.course_id == course_id).all()
 
-    def get_user_course_module_by_id(
-        self, db: Session, user_id: int, course_id: int, module_id: int
-    ) -> Module:
-        module = (
-            db.query(Module)
-            .filter(Module.course_id == course_id, Module.module_id == module_id)
-            .first()
-        )
+    def get_course_module_by_id(self, db: Session, module_id: int) -> Module:
+        module = db.query(Module).filter(Module.module_id == module_id).first()
         if not module:
             raise HTTPException(status_code=404, detail="Module not found")
         return module
 
     def create_module(
-        self, db: Session, user_id: int, course_id: int, module_data: ModuleCreate
+        self, db: Session, course_id: int, module_data: ModuleCreate
     ) -> Module:
         try:
             # Query the maximum position value of existing modules in the course
@@ -58,15 +50,11 @@ class ModulesRepository:
     def update_module(
         self,
         db: Session,
-        user_id: int,
-        course_id: int,
         module_id: int,
         module_data: ModuleUpdate,
     ) -> Module:
         try:
-            module = self.get_user_course_module_by_id(
-                db, user_id, course_id, module_id
-            )
+            module = self.get_course_module_by_id(db, module_id)
             for field, value in module_data.model_dump(exclude_unset=True).items():
                 setattr(module, field, value)
             db.commit()
@@ -78,11 +66,9 @@ class ModulesRepository:
             )
         return module
 
-    def delete_module(self, db: Session, user_id: int, course_id: int, module_id: int):
+    def delete_module(self, db: Session, module_id: int):
         try:
-            module = self.get_user_course_module_by_id(
-                db, user_id, course_id, module_id
-            )
+            module = self.get_course_module_by_id(db, module_id)
             db.delete(module)
             db.commit()
         except IntegrityError:

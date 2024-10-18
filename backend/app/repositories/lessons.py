@@ -7,19 +7,11 @@ from ..schemas.lessons import LessonCreate, LessonUpdate
 
 
 class LessonsRepository:
-    def get_user_module_lessons(
-        self, db: Session, user_id: int, course_id: int, module_id: int
-    ) -> list[Lesson]:
+    def get_module_lessons(self, db: Session, module_id: int) -> list[Lesson]:
         return db.query(Lesson).filter(Lesson.module_id == module_id).all()
 
-    def get_user_module_lesson_by_id(
-        self, db: Session, user_id: int, course_id: int, module_id: int, lesson_id: int
-    ) -> Lesson:
-        lesson = (
-            db.query(Lesson)
-            .filter(Lesson.module_id == module_id, Lesson.lesson_id == lesson_id)
-            .first()
-        )
+    def get_module_lesson_by_id(self, db: Session, lesson_id: int) -> Lesson:
+        lesson = db.query(Lesson).filter(Lesson.lesson_id == lesson_id).first()
         if not lesson:
             raise HTTPException(status_code=404, detail="Lesson not found")
         return lesson
@@ -27,8 +19,6 @@ class LessonsRepository:
     def create_lesson(
         self,
         db: Session,
-        user_id: int,
-        course_id: int,
         module_id: int,
         lesson_data: LessonCreate,
     ) -> Lesson:
@@ -63,16 +53,11 @@ class LessonsRepository:
     def update_lesson(
         self,
         db: Session,
-        user_id: int,
-        course_id: int,
-        module_id: int,
         lesson_id: int,
         lesson_data: LessonUpdate,
     ) -> Lesson:
         try:
-            lesson = self.get_user_module_lesson_by_id(
-                db, user_id, course_id, module_id, lesson_id
-            )
+            lesson = self.get_module_lesson_by_id(db, lesson_id)
             for field, value in lesson_data.model_dump(exclude_unset=True).items():
                 setattr(lesson, field, value)
             db.commit()
@@ -84,13 +69,9 @@ class LessonsRepository:
             )
         return lesson
 
-    def delete_lesson(
-        self, db: Session, user_id: int, course_id: int, module_id: int, lesson_id: int
-    ):
+    def delete_lesson(self, db: Session, lesson_id: int):
         try:
-            lesson = self.get_user_module_lesson_by_id(
-                db, user_id, course_id, module_id, lesson_id
-            )
+            lesson = self.get_module_lesson_by_id(db, lesson_id)
             db.delete(lesson)
             db.commit()
         except IntegrityError:

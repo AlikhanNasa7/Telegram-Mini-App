@@ -5,6 +5,8 @@ from ..database.models import Question
 from ..schemas.questions import QuestionCreate, QuestionUpdate
 from ..schemas.user_progress import UserProgressCreate
 
+VALID_TYPES = ["multiple_choice", "true_false"]
+
 
 class QuestionsRepository:
     def get_quiz_questions(self, db: Session, quiz_id: int) -> list[Question]:
@@ -22,6 +24,11 @@ class QuestionsRepository:
         self, db: Session, quiz_id: int, question_data: QuestionCreate
     ) -> Question:
         try:
+            if question_data.question_type not in VALID_TYPES:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid question type. Must be one of: 'multiple_choice', 'true_false'",
+                )
             new_question = Question(
                 quiz_id=quiz_id,
                 question_text=question_data.question_text,
@@ -43,6 +50,11 @@ class QuestionsRepository:
         self, db: Session, question_id: int, question_data: QuestionUpdate
     ) -> Question:
         try:
+            if question_data.question_type not in VALID_TYPES:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid question type. Must be one of: 'multiple_choice', 'true_false'",
+                )
             question = self.get_question_by_id(db, question_id)
             for field, value in question_data.model_dump(exclude_unset=True).items():
                 setattr(question, field, value)
