@@ -17,7 +17,7 @@ from .base import Base
 class User(Base):
     __tablename__ = "users"
 
-    user_id = Column(Integer, primary_key=True)  # Telegram user ID
+    user_id = Column(Integer, primary_key=True, index=True)  # Telegram user ID
     username = Column(String(50), unique=True)
     registration_date = Column(DateTime, default=datetime.utcnow)
     tokens_balance = Column(Integer, default=0)
@@ -35,7 +35,7 @@ class User(Base):
 class Course(Base):
     __tablename__ = "courses"
 
-    course_id = Column(Integer, primary_key=True)
+    course_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.user_id"))  # New foreign key
     title = Column(String(100), nullable=False)
     description = Column(Text)
@@ -55,7 +55,7 @@ class Course(Base):
 class Module(Base):
     __tablename__ = "modules"
 
-    module_id = Column(Integer, primary_key=True)
+    module_id = Column(Integer, primary_key=True, index=True)
     course_id = Column(Integer, ForeignKey("courses.course_id"))
     title = Column(String(100), nullable=False)
     description = Column(Text)
@@ -73,7 +73,7 @@ class Module(Base):
 class Lesson(Base):
     __tablename__ = "lessons"
 
-    lesson_id = Column(Integer, primary_key=True)
+    lesson_id = Column(Integer, primary_key=True, index=True)
     module_id = Column(Integer, ForeignKey("modules.module_id"))
     title = Column(String(100), nullable=False)
     description = Column(Text)
@@ -94,7 +94,7 @@ class Lesson(Base):
 class Quiz(Base):
     __tablename__ = "quizzes"
 
-    quiz_id = Column(Integer, primary_key=True)
+    quiz_id = Column(Integer, primary_key=True, index=True)
     lesson_id = Column(Integer, ForeignKey("lessons.lesson_id"))
     title = Column(String(100), nullable=False)
     description = Column(Text)
@@ -113,7 +113,7 @@ class Quiz(Base):
 class Question(Base):
     __tablename__ = "questions"
 
-    question_id = Column(Integer, primary_key=True)
+    question_id = Column(Integer, primary_key=True, index=True)
     quiz_id = Column(Integer, ForeignKey("quizzes.quiz_id"))
     question_text = Column(Text, nullable=False)
     question_type = Column(
@@ -131,7 +131,7 @@ class Question(Base):
 class UserProgress(Base):
     __tablename__ = "user_progress"
 
-    progress_id = Column(Integer, primary_key=True)
+    progress_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.user_id"))
     lesson_id = Column(Integer, ForeignKey("lessons.lesson_id"), nullable=True)
     quiz_id = Column(Integer, ForeignKey("quizzes.quiz_id"), nullable=True)
@@ -154,7 +154,7 @@ class UserProgress(Base):
 class CourseEnrollment(Base):
     __tablename__ = "course_enrollments"
 
-    enrollment_id = Column(Integer, primary_key=True)
+    enrollment_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.user_id"))
     course_id = Column(Integer, ForeignKey("courses.course_id"))
     enrollment_date = Column(DateTime, default=datetime.utcnow)
