@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from ..database.models import User, Course
-from ..schemas.users import UserCreate, UserUpdate
+from ..schemas.users import UserCreate
 from ..schemas.courses import CourseOut
 
 
@@ -43,20 +43,6 @@ class UsersRepository:
                 status_code=400, detail="Integrity error while creating user"
             )
         return new_user
-
-    def update_user(self, db: Session, user_id: int, user_data: UserUpdate) -> User:
-        try:
-            user = self.get_user_by_id(db, user_id)
-            for field, value in user_data.model_dump(exclude_unset=True).items():
-                setattr(user, field, value)
-            db.commit()
-            db.refresh(user)
-        except IntegrityError:
-            db.rollback()
-            raise HTTPException(
-                status_code=400, detail="Integrity error while updating user"
-            )
-        return user
 
     def delete_user(self, db: Session, user_id: int):
         try:
