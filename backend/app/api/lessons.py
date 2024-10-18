@@ -9,7 +9,7 @@ lessons_repository = LessonsRepository()
 
 
 # Get all lessons within a specific module
-@router.get("modules/{module_id}/lessons", response_model=list[LessonOut])
+@router.get("/modules/{module_id}/lessons", response_model=list[LessonOut])
 def get_module_lessons(module_id: int, db: Session = Depends(get_db)):
     lessons = lessons_repository.get_module_lessons(db, module_id)
     if not lessons:
@@ -18,7 +18,7 @@ def get_module_lessons(module_id: int, db: Session = Depends(get_db)):
 
 
 # Get a specific lesson within a module
-@router.get("lessons/{lesson_id}", response_model=LessonOut)
+@router.get("/lessons/{lesson_id}", response_model=LessonOut)
 def get_lesson(
     lesson_id: int,
     db: Session = Depends(get_db),
@@ -30,7 +30,7 @@ def get_lesson(
 
 
 # Create a new lesson in a module
-@router.post("modules/{module_id}/lessons", response_model=LessonOut)
+@router.post("/modules/{module_id}/lessons", response_model=LessonOut)
 def create_lesson(
     module_id: int,
     lesson_data: LessonCreate,
@@ -41,7 +41,7 @@ def create_lesson(
 
 
 # Update a lesson
-@router.patch("lessons/{lesson_id}", response_model=LessonOut)
+@router.patch("/lessons/{lesson_id}", response_model=LessonOut)
 def update_lesson(
     lesson_id: int,
     lesson_data: LessonUpdate,
@@ -52,7 +52,7 @@ def update_lesson(
 
 
 # Delete a lesson
-@router.delete("lessons/{lesson_id}")
+@router.delete("/lessons/{lesson_id}")
 def delete_lesson(
     module_id: int,
     lesson_id: int,

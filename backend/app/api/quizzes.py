@@ -12,7 +12,7 @@ progress_repository = UserProgressRepository()
 
 
 # Get all quizzes within a lesson
-@router.get("lessons/{lesson_id}/quizzes", response_model=list[QuizOut])
+@router.get("/lessons/{lesson_id}/quizzes", response_model=list[QuizOut])
 def get_lesson_quizzes(
     lesson_id: int,
     db: Session = Depends(get_db),
@@ -27,7 +27,7 @@ def get_lesson_quizzes(
 
 
 # Get a specific quiz by quiz_id
-@router.get("quizzes/{quiz_id}", response_model=QuizOut)
+@router.get("/quizzes/{quiz_id}", response_model=QuizOut)
 def get_quiz(
     quiz_id: int,
     db: Session = Depends(get_db),
@@ -40,7 +40,7 @@ def get_quiz(
 
 
 # Create a new quiz in a lesson
-@router.post("lessons/{lesson_id}/quizzes", response_model=QuizOut)
+@router.post("/lessons/{lesson_id}/quizzes", response_model=QuizOut)
 def create_quiz(
     lesson_id: int,
     quiz_data: QuizCreate,
@@ -54,7 +54,7 @@ def create_quiz(
 
 
 # Update a quiz
-@router.patch("quizzes/{quiz_id}", response_model=QuizOut)
+@router.patch("/quizzes/{quiz_id}", response_model=QuizOut)
 def update_quiz(
     quiz_id: int,
     quiz_data: QuizUpdate,
@@ -68,7 +68,7 @@ def update_quiz(
 
 
 # Delete a quiz
-@router.delete("quizzes/{quiz_id}")
+@router.delete("/quizzes/{quiz_id}")
 def delete_quiz(
     quiz_id: int,
     db: Session = Depends(get_db),

@@ -1,10 +1,12 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List, Any
 
 
 class LessonCreate(BaseModel):
     title: str
-    content: Optional[str]
+    description: Optional[str]
+    content: Optional[List[Any]]
+    image_url: Optional[Any]
 
     class Config:
         schema_extra = {
@@ -17,16 +19,20 @@ class LessonCreate(BaseModel):
 
 class LessonUpdate(BaseModel):
     title: Optional[str]
-    content: Optional[str]
+    description: Optional[str]
+    content: Optional[List[Any]]
     position: Optional[int]
+    image_url: Optional[Any]
 
 
 class LessonOut(BaseModel):
     lesson_id: int
     module_id: int
     title: str
-    content: Optional[str]
+    description: Optional[str]
     position: Optional[int]
+    content: Optional[List[Any]]
+    image_url: Optional[Any]
 
     class Config:
         orm_mode = True

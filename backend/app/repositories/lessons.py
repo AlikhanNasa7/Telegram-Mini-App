@@ -37,8 +37,10 @@ class LessonsRepository:
             new_lesson = Lesson(
                 module_id=module_id,
                 title=lesson_data.title,
+                description=lesson_data.description,
                 content=lesson_data.content,
                 position=new_position,
+                image_url=lesson_data.image_url,
             )
             db.add(new_lesson)
             db.commit()

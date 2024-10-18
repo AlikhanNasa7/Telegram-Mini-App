@@ -9,7 +9,7 @@ questions_repository = QuestionsRepository()
 
 
 # Get all questions within a quiz
-@router.get("quizzes/{quiz_id}/questions", response_model=list[QuestionOut])
+@router.get("/quizzes/{quiz_id}/questions", response_model=list[QuestionOut])
 def get_quiz_questions(
     quiz_id: int,
     db: Session = Depends(get_db),
@@ -21,7 +21,7 @@ def get_quiz_questions(
 
 
 # Get a specific question within a quiz
-@router.get("questions/{question_id}", response_model=QuestionOut)
+@router.get("/questions/{question_id}", response_model=QuestionOut)
 def get_question(
     quiz_id: int,
     question_id: int,
@@ -34,7 +34,7 @@ def get_question(
 
 
 # Create a new question in a quiz
-@router.post("quizzes/{quiz_id}/questions", response_model=QuestionOut)
+@router.post("/quizzes/{quiz_id}/questions", response_model=QuestionOut)
 def create_question(
     quiz_id: int,
     question_data: QuestionCreate,
@@ -45,7 +45,7 @@ def create_question(
 
 
 # Update a question
-@router.patch("questions/{question_id}", response_model=QuestionOut)
+@router.patch("/questions/{question_id}", response_model=QuestionOut)
 def update_question(
     question_id: int,
     question_data: QuestionUpdate,
@@ -60,7 +60,7 @@ def update_question(
 
 
 # Delete a question
-@router.delete("questions/{question_id}")
+@router.delete("/questions/{question_id}")
 def delete_question(
     question_id: int,
     db: Session = Depends(get_db),

@@ -18,7 +18,7 @@ def get_course_modules(course_id: int, db: Session = Depends(get_db)):
 
 
 # Get a specific module within a course
-@router.get("modules/{module_id}", response_model=ModuleOut)
+@router.get("/modules/{module_id}", response_model=ModuleOut)
 def get_module(module_id: int, db: Session = Depends(get_db)):
     module = modules_repository.get_course_module_by_id(db, module_id)
     if not module:
@@ -38,7 +38,7 @@ def create_module(
 
 
 # Update a module
-@router.patch("modules/{module_id}", response_model=ModuleOut)
+@router.patch("/modules/{module_id}", response_model=ModuleOut)
 def update_module(
     module_id: int,
     module_data: ModuleUpdate,
@@ -49,7 +49,7 @@ def update_module(
 
 
 # Delete a module
-@router.delete("modules/{module_id}")
+@router.delete("/modules/{module_id}")
 def delete_module(module_id: int, db: Session = Depends(get_db)):
     modules_repository.delete_module(db, module_id)
     return {"detail": "Module deleted successfully"}
