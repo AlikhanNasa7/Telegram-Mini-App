@@ -54,6 +54,17 @@ def create_course(thing_to_learn, description):
                         "title": "Lesson 1",
                         "content": "Content of Lesson 1",
                         "position": 1,
+                        "image_url": "https://www.example.com/image1.jpg",
+                        "content": [
+                            {
+                                "type": "text",
+                                "value": "Text content here"
+                            },
+                            {
+                                "type": "text",
+                                "value": "Text content here"
+                            }
+                        ]
                         "quizzes": [
                             {
                                 "title": "Quiz 1",

@@ -76,9 +76,10 @@ class Lesson(Base):
     lesson_id = Column(Integer, primary_key=True)
     module_id = Column(Integer, ForeignKey("modules.module_id"))
     title = Column(String(100), nullable=False)
-    content = Column(Text)
+    description = Column(Text)
     position = Column(Integer)
     content = Column(JSON, nullable=True)
+    image_url = Column(String(255), nullable=True)
 
     module = relationship("Module", back_populates="lessons")
     quizzes = relationship(
