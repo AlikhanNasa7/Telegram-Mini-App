@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from ..database.models import Lesson
@@ -32,11 +33,22 @@ class LessonsRepository:
         lesson_data: LessonCreate,
     ) -> Lesson:
         try:
+            # Query the maximum position of existing lessons in the module
+            max_position = (
+                db.query(func.max(Lesson.position))
+                .filter(Lesson.module_id == module_id)
+                .scalar()
+            )
+
+            # Set the position to max_position + 1, or 1 if no lessons exist
+            new_position = (max_position or 0) + 1
+
+            # Create the new lesson with the calculated position
             new_lesson = Lesson(
                 module_id=module_id,
                 title=lesson_data.title,
                 content=lesson_data.content,
-                position=lesson_data.position,
+                position=new_position,
             )
             db.add(new_lesson)
             db.commit()

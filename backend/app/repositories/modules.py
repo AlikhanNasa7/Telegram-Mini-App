@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from ..database.models import Module
@@ -27,15 +28,17 @@ class ModulesRepository:
         self, db: Session, user_id: int, course_id: int, module_data: ModuleCreate
     ) -> Module:
         try:
-            # Query the number of existing modules in the course
-            module_count = (
-                db.query(Module).filter(Module.course_id == course_id).count()
+            # Query the maximum position value of existing modules in the course
+            max_position = (
+                db.query(func.max(Module.position))
+                .filter(Module.course_id == course_id)
+                .scalar()
             )
 
-            # Set the position to be one more than the number of existing modules
-            new_position = module_count + 1
+            # Set the position to max_position + 1, or 1 if no modules exist
+            new_position = (max_position or 0) + 1
 
-            # Create the new module with the automatically calculated position
+            # Create the new module with the calculated position
             new_module = Module(
                 course_id=course_id,
                 title=module_data.title,

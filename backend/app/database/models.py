@@ -42,7 +42,7 @@ class Course(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = relationship("User", back_populates="courses")
-    modules = relationship("Module", back_populates="course")
+    modules = relationship("Module", back_populates="course", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Course(course_id={self.course_id}, title='{self.title}')>"
@@ -58,7 +58,7 @@ class Module(Base):
     position = Column(Integer)
 
     course = relationship("Course", back_populates="modules")
-    lessons = relationship("Lesson", back_populates="module")
+    lessons = relationship("Lesson", back_populates="module", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Module(module_id={self.module_id}, title='{self.title}', position={self.position})>"
@@ -74,7 +74,7 @@ class Lesson(Base):
     position = Column(Integer)
 
     module = relationship("Module", back_populates="lessons")
-    quizzes = relationship("Quiz", back_populates="lesson")
+    quizzes = relationship("Quiz", back_populates="lesson", cascade="all, delete-orphan")
     progress_records = relationship("UserProgress", back_populates="lesson")
 
     def __repr__(self):
@@ -91,7 +91,7 @@ class Quiz(Base):
     position = Column(Integer)
 
     lesson = relationship("Lesson", back_populates="quizzes")
-    questions = relationship("Question", back_populates="quiz")
+    questions = relationship("Question", back_populates="quiz", cascade="all, delete-orphan")
     progress_records = relationship("UserProgress", back_populates="quiz")
 
     def __repr__(self):
