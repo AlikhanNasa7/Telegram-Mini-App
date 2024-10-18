@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -30,4 +30,10 @@ class CourseOut(BaseModel):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        orm_mode = True  # Support SQLAlchemy models
+        from_attributes = True  # Required for using 'from_orm'
+
+
+class Courses(BaseModel):
+    total: int
+    objects: List[CourseOut]

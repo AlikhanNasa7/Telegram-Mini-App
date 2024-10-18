@@ -2,12 +2,16 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from ..database.models import Course
-from ..schemas.courses import CourseCreate, CourseUpdate
+from ..schemas.courses import CourseCreate, CourseUpdate, CourseOut
 
 
 class CoursesRepository:
-    def get_courses(self, db: Session) -> list[Course]:
-        return db.query(Course).all()
+    def get_courses(self, db: Session, limit, offset):
+        query = db.query(Course)
+        total_count = query.count()
+        db_courses = query.limit(limit).offset(offset).all()
+        courses_out = [CourseOut.from_orm(course) for course in db_courses]
+        return total_count, courses_out
 
     def get_course_by_id(self, db: Session, course_id: int) -> Course:
         course = db.query(Course).filter(Course.course_id == course_id).first()

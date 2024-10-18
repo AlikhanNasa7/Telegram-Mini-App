@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..repositories.courses import CoursesRepository
-from ..schemas.courses import CourseCreate, CourseUpdate, CourseOut
+from ..schemas.courses import CourseCreate, CourseUpdate, CourseOut, Courses
 from ..database.base import get_db
 from ..llm import course_creator
 import json
@@ -12,12 +12,19 @@ courses_repository = CoursesRepository()
 
 
 # Get all courses belonging to the user
-@router.get("/", response_model=list[CourseOut])
-def get_courses(db: Session = Depends(get_db)):
-    courses = courses_repository.get_courses(db)
+@router.get("/", response_model=Courses)
+def get_courses(
+    db: Session = Depends(get_db),
+    limit: int = 5,
+    offset: int = 0,
+):
+    total_count, courses = courses_repository.get_courses(db, limit, offset)
     if not courses:
         raise HTTPException(status_code=404, detail="No courses found")
-    return courses
+    return Courses(
+        total=total_count,
+        objects=courses
+    )
 
 
 # Get a specific course belonging to the user
