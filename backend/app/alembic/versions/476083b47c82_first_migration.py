@@ -1,8 +1,8 @@
-"""first migration
+"""first-migration
 
-Revision ID: 174b0ca71317
+Revision ID: 476083b47c82
 Revises: 
-Create Date: 2024-10-18 18:26:53.843193
+Create Date: 2024-10-19 00:39:51.823929
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '174b0ca71317'
+revision: str = '476083b47c82'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -40,6 +40,15 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ),
     sa.PrimaryKeyConstraint('course_id')
     )
+    op.create_table('course_enrollments',
+    sa.Column('enrollment_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('course_id', sa.Integer(), nullable=True),
+    sa.Column('enrollment_date', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['course_id'], ['courses.course_id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ),
+    sa.PrimaryKeyConstraint('enrollment_id')
+    )
     op.create_table('modules',
     sa.Column('module_id', sa.Integer(), nullable=False),
     sa.Column('course_id', sa.Integer(), nullable=True),
@@ -53,7 +62,7 @@ def upgrade() -> None:
     sa.Column('lesson_id', sa.Integer(), nullable=False),
     sa.Column('module_id', sa.Integer(), nullable=True),
     sa.Column('title', sa.String(length=100), nullable=False),
-    sa.Column('content', sa.Text(), nullable=True),
+    sa.Column('content', sa.JSON(), nullable=True),
     sa.Column('position', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['module_id'], ['modules.module_id'], ),
     sa.PrimaryKeyConstraint('lesson_id')
@@ -101,6 +110,7 @@ def downgrade() -> None:
     op.drop_table('quizzes')
     op.drop_table('lessons')
     op.drop_table('modules')
+    op.drop_table('course_enrollments')
     op.drop_table('courses')
     op.drop_table('users')
     # ### end Alembic commands ###

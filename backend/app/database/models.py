@@ -78,6 +78,7 @@ class Lesson(Base):
     title = Column(String(100), nullable=False)
     content = Column(Text)
     position = Column(Integer)
+    content = Column(JSON, nullable=True)
 
     module = relationship("Module", back_populates="lessons")
     quizzes = relationship(
