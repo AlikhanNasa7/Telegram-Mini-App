@@ -3,18 +3,14 @@ from typing import Optional
 
 
 class ModuleCreate(BaseModel):
-    course_id: int
     title: str
     description: Optional[str]
-    position: Optional[int]
 
     class Config:
         schema_extra = {
             "example": {
-                "course_id": 1,
                 "title": "Introduction",
                 "description": "Getting started with the course.",
-                "position": 1,
             }
         }
 

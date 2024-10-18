@@ -3,7 +3,7 @@ from app.api.users import router as users_router
 from app.api.courses import router as courses_router
 from app.api.modules import router as modules_router
 from app.api.lessons import router as lessons_router
-from backend.app.api.quiz import router as quizzes_router
+from app.api.quiz import router as quizzes_router
 from app.api.questions import router as questions_router
 from app.api.user_progress import router as user_progress_router
 
