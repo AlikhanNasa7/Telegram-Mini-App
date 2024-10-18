@@ -13,16 +13,14 @@ class UsersRepository:
             raise HTTPException(status_code=404, detail="User not found")
         return user
 
-    def get_courses_by_user_id(
-        self, db: Session, limit: int, offset: int, user_id: int
-    ):
+    def get_courses_by_user_id(self, db: Session, user_id: int):
         user = db.query(User).filter(User.user_id == user_id).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
         query = db.query(Course).filter(Course.user_id == user_id)
         total_count = query.count()
-        db_courses = query.offset(offset).limit(limit).all()
+        db_courses = query.all()
         courses_out = [CourseOut.from_orm(course) for course in db_courses]
         return total_count, courses_out
 

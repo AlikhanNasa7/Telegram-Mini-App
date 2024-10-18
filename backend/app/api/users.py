@@ -32,12 +32,8 @@ def get_current_user(user_id: int, db: Session = Depends(get_db)):
 def get_courses_of_user(
     user_id: int,
     db: Session = Depends(get_db),
-    limit: int = 5,
-    offset: int = 0,
 ):
-    total_count, courses = users_repository.get_courses_by_user_id(
-        db, limit, offset, user_id=user_id
-    )
+    total_count, courses = users_repository.get_courses_by_user_id(db, user_id=user_id)
     if not courses:
         raise HTTPException(status_code=404, detail="No courses found")
     return Courses(total=total_count, objects=courses)
