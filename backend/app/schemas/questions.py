@@ -3,7 +3,6 @@ from typing import Optional, List, Any
 
 
 class QuestionCreate(BaseModel):
-    quiz_id: int
     question_text: str
     question_type: str  # 'multiple_choice', 'true_false'
     options: Optional[List[Any]]  # List of options for multiple-choice

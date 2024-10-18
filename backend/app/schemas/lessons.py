@@ -6,7 +6,7 @@ class LessonCreate(BaseModel):
     title: str
     description: Optional[str]
     content: Optional[List[Any]]
-    image_url: Optional[Any]
+    image_url: Optional[Any] = None
 
     class Config:
         schema_extra = {
