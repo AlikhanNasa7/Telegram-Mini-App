@@ -28,7 +28,6 @@ class UsersRepository:
         try:
             new_user = User(
                 user_id=user_data.user_id,
-                username=user_data.username,
                 tokens_balance=user_data.tokens_balance,
                 experience_points=user_data.experience_points,
                 level=user_data.level,

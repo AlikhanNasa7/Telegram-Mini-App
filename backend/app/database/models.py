@@ -18,7 +18,8 @@ class User(Base):
     __tablename__ = "users"
 
     user_id = Column(Integer, primary_key=True, index=True)  # Telegram user ID
-    username = Column(String(50), unique=True)
+    username = Column(String, unique=True)
+    firstname = Column(String)
     registration_date = Column(DateTime, default=datetime.utcnow)
     tokens_balance = Column(Integer, default=0)
     experience_points = Column(Integer, default=0)
