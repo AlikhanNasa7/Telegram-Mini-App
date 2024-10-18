@@ -10,10 +10,9 @@ users_repository = UsersRepository()
 
 
 @router.post("/", response_model=UserOut)
-def create_or_update_user(user_data: UserCreate, db: Session = Depends(get_db)):
+def create_or_return_user(user_data: UserCreate, db: Session = Depends(get_db)):
     user = users_repository.get_user_by_id(db, user_data.id)
     if user:
-        user = users_repository.update_user(db, user_data)
         return user
     user = users_repository.create_user(db, user_data)
     return user
