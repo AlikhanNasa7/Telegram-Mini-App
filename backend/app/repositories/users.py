@@ -13,7 +13,9 @@ class UsersRepository:
             raise HTTPException(status_code=404, detail="User not found")
         return user
 
-    def get_courses_by_user_id(self, db: Session, limit: int, offset: int, user_id: int):
+    def get_courses_by_user_id(
+        self, db: Session, limit: int, offset: int, user_id: int
+    ):
         user = db.query(User).filter(User.user_id == user_id).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -28,9 +30,9 @@ class UsersRepository:
         try:
             new_user = User(
                 user_id=user_data.user_id,
-                tokens_balance=user_data.tokens_balance,
-                experience_points=user_data.experience_points,
-                level=user_data.level,
+                tokens_balance=1000,
+                experience_points=0,
+                level=1,
             )
             db.add(new_user)
             db.commit()

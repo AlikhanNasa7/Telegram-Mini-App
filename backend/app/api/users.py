@@ -10,12 +10,17 @@ users_repository = UsersRepository()
 
 
 @router.post("/", response_model=UserOut)
-def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
+def create_or_update_user(user_data: UserCreate, db: Session = Depends(get_db)):
+    user = users_repository.get_user_by_id(db, user_data.id)
+    if user:
+        user = users_repository.update_user(db, user_data)
+        return user
     user = users_repository.create_user(db, user_data)
     return user
 
+
 # Get current user profile
-@router.get("/", response_model=UserOut)
+@router.get("/me", response_model=UserOut)
 def get_current_user(user_id: int, db: Session = Depends(get_db)):
     user = users_repository.get_user_by_id(db, user_id)
     if not user:
@@ -31,18 +36,12 @@ def get_courses_of_user(
     limit: int = 5,
     offset: int = 0,
 ):
-    total_count, courses = users_repository.get_courses_by_user_id(db, limit, offset, user_id=user_id)
+    total_count, courses = users_repository.get_courses_by_user_id(
+        db, limit, offset, user_id=user_id
+    )
     if not courses:
         raise HTTPException(status_code=404, detail="No courses found")
     return Courses(total=total_count, objects=courses)
-
-# Update current user profile
-@router.patch("/", response_model=UserOut)
-def update_current_user(
-    user_id: int, user_data: UserUpdate, db: Session = Depends(get_db)
-):
-    updated_user = users_repository.update_user(db, user_id, user_data)
-    return updated_user
 
 
 # Delete user account
