@@ -13,6 +13,13 @@ class CoursesRepository:
         courses_out = [CourseOut.from_orm(course) for course in db_courses]
         return total_count, courses_out
 
+    def get_all_courses(self, db: Session):
+        query = db.query(Course)
+        total_count = query.count()
+        db_courses = query.all()
+        courses_out = [CourseOut.from_orm(course) for course in db_courses]
+        return total_count, courses_out
+
     def get_course_by_id(self, db: Session, course_id: int) -> Course:
         course = db.query(Course).filter(Course.course_id == course_id).first()
         if not course:
