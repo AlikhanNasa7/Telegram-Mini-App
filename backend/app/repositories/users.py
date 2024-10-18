@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
-from ..database.models import User
+from ..database.models import User, Course
 from ..schemas.users import UserCreate, UserUpdate
+from ..schemas.courses import CourseOut
 
 
 class UsersRepository:
@@ -11,6 +12,17 @@ class UsersRepository:
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         return user
+
+    def get_courses_by_user_id(self, db: Session, limit: int, offset: int, user_id: int):
+        user = db.query(User).filter(User.user_id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        query = db.query(Course).filter(Course.user_id == user_id)
+        total_count = query.count()
+        db_courses = query.offset(offset).limit(limit).all()
+        courses_out = [CourseOut.from_orm(course) for course in db_courses]
+        return total_count, courses_out
 
     def create_user(self, db: Session, user_data: UserCreate) -> User:
         try:
