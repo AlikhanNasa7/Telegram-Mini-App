@@ -7,7 +7,18 @@ from app.api.quizzes import router as quizzes_router
 from app.api.questions import router as questions_router
 from app.api.user_progress import router as user_progress_router
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
+
+# Configure CORS middleware to allow all origins, methods, and headers
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 # Include routers
 app.include_router(users_router, prefix="/users", tags=["users"])
