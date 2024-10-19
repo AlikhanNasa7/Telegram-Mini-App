@@ -9,10 +9,10 @@ def create_course(thing_to_learn, description):
         
         Please create a JSON response that adheres to the following requirements:
         - The course should have 1 course object.
-        - The course should include 5 modules.
-        - Each module should contain 5 lessons.
+        - The course should include 2 modules.
+        - Each module should contain 2 lessons.
         - Each lesson should have 1 quiz.
-        - Each quiz should contain 3 questions.
+        - Each quiz should contain 2 questions.
 
         The JSON response should have the following fields:
         - Course:
