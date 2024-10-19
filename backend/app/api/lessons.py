@@ -2,12 +2,15 @@ import os
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+
+from app.repositories.user_progress import UserProgressRepository
 from ..repositories.lessons import LessonsRepository
 from ..schemas.lessons import LessonCreate, LessonUpdate, LessonOut
 from ..database.base import get_db
 
 router = APIRouter()
 lessons_repository = LessonsRepository()
+user_progress_repository = UserProgressRepository()
 
 
 # Get all lessons within a specific module
@@ -23,12 +26,18 @@ def get_module_lessons(module_id: int, db: Session = Depends(get_db)):
 @router.get("/lessons/{lesson_id}", response_model=LessonOut)
 def get_lesson(
     lesson_id: int,
+    user_id: int,
     db: Session = Depends(get_db),
 ):
     lesson = lessons_repository.get_module_lesson_by_id(db, lesson_id)
     if not lesson:
         raise HTTPException(status_code=404, detail="Lesson not found")
-    return lesson
+
+    user_progress = user_progress_repository.get_user_progress(db, user_id, lesson_id)
+    have_passed = user_progress is not None
+
+    lesson_out = LessonOut.from_orm(lesson).copy(update={"have_passed": have_passed})
+    return lesson_out
 
 
 # Create a new lesson in a module

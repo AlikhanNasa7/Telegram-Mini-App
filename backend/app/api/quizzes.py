@@ -80,34 +80,23 @@ def delete_quiz(
     return {"detail": "Quiz deleted successfully"}
 
 
-# Submit quiz results
-@router.post("/{quiz_id}/submit")
+@router.post("/lessons/{lesson_id}/quiz/submit")
 def submit_quiz_results(
     user_id: int,
-    quiz_id: int,
     lesson_id: int,
     correct_answers: int,
     total_questions: int,
     db: Session = Depends(get_db),
 ):
-    """
-    Submit the quiz results for the lesson and update user progress and experience.
-    """
-    # Step 1: Create or update progress for this quiz submission
     progress_data = UserProgressCreate(
         user_id=user_id,
         lesson_id=lesson_id,
-        quiz_id=quiz_id,
-        status="completed" if correct_answers == total_questions else "in_progress",
-        score=(correct_answers / total_questions) * 100,
-        attempts=1,  # This can be updated based on your app's logic (e.g., tracking attempts)
+        correct_answers=correct_answers,
+        total_questions=total_questions,
     )
 
-    progress_repository.create_or_update_progress(db, progress_data)
+    progress_repository.create_progress(db, progress_data)
 
-    # Step 2: Update tokens and experience points based on quiz performance
-    progress_repository.update_tokens_and_experience(
-        db, user_id, correct_answers, total_questions
-    )
+    progress_repository.update_tokens_and_experience(db, user_id, correct_answers)
 
     return {"detail": "Quiz results submitted and progress updated successfully"}

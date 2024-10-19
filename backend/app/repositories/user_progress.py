@@ -6,6 +6,9 @@ from ..schemas.user_progress import UserProgressCreate, UserProgressUpdate
 from ..repositories.users import UsersRepository
 
 
+REWARD_TOKENS = 50
+
+
 class UserProgressRepository:
     def get_user_progress(
         self, db: Session, user_id: int, lesson_id: int
@@ -18,10 +21,10 @@ class UserProgressRepository:
             .first()
         )
         if not progress:
-            raise HTTPException(status_code=404, detail="Progress not found")
+            return None
         return progress
 
-    def create_or_update_progress(
+    def create_progress(
         self, db: Session, progress_data: UserProgressCreate
     ) -> UserProgress:
         try:
@@ -35,10 +38,9 @@ class UserProgressRepository:
             )
 
             if progress:
-                for field, value in progress_data.model_dump(
-                    exclude_unset=True
-                ).items():
-                    setattr(progress, field, value)
+                raise HTTPException(
+                    status_code=400, detail="Progress already exists for this lesson"
+                )
             else:
                 progress = UserProgress(**progress_data.model_dump())
                 db.add(progress)
@@ -52,25 +54,19 @@ class UserProgressRepository:
         return progress
 
     def update_tokens_and_experience(
-        self, db: Session, user_id: int, correct_answers: int, total_questions: int
+        self, db: Session, user_id: int, correct_answers: int
     ):
         try:
             user_repo = UsersRepository()
             user = user_repo.get_user_by_id(db, user_id)
 
-            # Calculate points and tokens
-            experience_points_gain = (
-                correct_answers * 10
-            )  # Example: 10 XP per correct answer
-            token_gain = correct_answers * 2  # Example: 2 tokens per correct answer
+            experience_points_gain = correct_answers * 10
+            token_gain = correct_answers * REWARD_TOKENS
 
             user.experience_points += experience_points_gain
             user.tokens_balance += token_gain
 
-            # Check if level should increase
-            if (
-                user.experience_points >= 100 * user.level
-            ):  # Example: level up when XP reaches 100 * current level
+            if user.experience_points >= 100 * user.level:
                 user.level += 1
 
             db.commit()

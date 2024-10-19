@@ -104,7 +104,6 @@ class Quiz(Base):
     questions = relationship(
         "Question", back_populates="quiz", cascade="all, delete-orphan"
     )
-    progress_records = relationship("UserProgress", back_populates="quiz")
 
     def __repr__(self):
         return f"<Quiz(quiz_id={self.quiz_id}, title='{self.title}', position={self.position})>"
@@ -134,18 +133,11 @@ class UserProgress(Base):
     progress_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.user_id"))
     lesson_id = Column(Integer, ForeignKey("lessons.lesson_id"), nullable=True)
-    quiz_id = Column(Integer, ForeignKey("quizzes.quiz_id"), nullable=True)
-    status = Column(
-        Enum("not_started", "in_progress", "completed", name="progress_status"),
-        nullable=False,
-    )
-    score = Column(Float)
-    last_accessed = Column(DateTime, default=datetime.utcnow)
-    attempts = Column(Integer, default=0)
+    correct_answers = Column(Integer, default=0)  # Add this field
+    total_questions = Column(Integer, default=0)
 
     user = relationship("User", back_populates="progress_records")
     lesson = relationship("Lesson", back_populates="progress_records")
-    quiz = relationship("Quiz", back_populates="progress_records")
 
     def __repr__(self):
         return f"<UserProgress(progress_id={self.progress_id}, user_id={self.user_id}, status='{self.status}')>"

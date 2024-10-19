@@ -34,6 +34,8 @@ class LessonOut(BaseModel):
     content: Optional[List[Any]]
     image_url: Optional[Any]
     audio_file_path: Optional[Any]
+    have_passed: Optional[bool] = None
 
     class Config:
         orm_mode = True
+        from_attributes = True
