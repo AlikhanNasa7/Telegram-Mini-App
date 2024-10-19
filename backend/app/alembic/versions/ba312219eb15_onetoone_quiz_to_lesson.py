@@ -1,8 +1,8 @@
-"""composite key course_enrollment
+"""onetoone quiz to lesson
 
-Revision ID: 0ef660ba61f9
+Revision ID: ba312219eb15
 Revises: 
-Create Date: 2024-10-19 11:58:21.486989
+Create Date: 2024-10-19 18:52:22.014273
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '0ef660ba61f9'
+revision: str = 'ba312219eb15'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -69,6 +69,7 @@ def upgrade() -> None:
     sa.Column('position', sa.Integer(), nullable=True),
     sa.Column('content', sa.JSON(), nullable=True),
     sa.Column('image_url', sa.String(length=255), nullable=True),
+    sa.Column('audio_file_path', sa.String(length=255), nullable=True),
     sa.ForeignKeyConstraint(['module_id'], ['modules.module_id'], ),
     sa.PrimaryKeyConstraint('lesson_id')
     )
