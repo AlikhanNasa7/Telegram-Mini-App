@@ -60,6 +60,8 @@ class UserProgressRepository:
             user_repo = UsersRepository()
             user = user_repo.get_user_by_id(db, user_id)
 
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
             experience_points_gain = correct_answers * 10
             token_gain = correct_answers * REWARD_TOKENS
 
