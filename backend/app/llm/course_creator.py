@@ -22,17 +22,15 @@ def create_course(thing_to_learn, description):
         - Module:
             - `title`: The title of the module.
             - `description`: A brief description of the module.
-            - `position`: The module's position within the course (1-2).
             - `lessons`: A list of lesson objects.
         - Lesson:
             - `title`: The title of the lesson.
+            - `description`: A brief description of the lesson
             - `content`: A list of content objects (e.g., text, images, videos). (You use text only). You need to include text that will teach student and then ask his knowledge with quizzes. You can write a lot here, this is kind of wikipedia article. 2-4 big paragraphs. Make it as useful as possible.
-            - `position`: The lesson's position within the module (1-2).
             - `quizzes`: A list of quiz objects.
         - Quiz:
             - `title`: The title of the quiz.
             - `description`: A brief description of the quiz content.
-            - `position`: The quiz's position within the lesson (1-2).
             - `questions`: A list of question objects.
         - Question:
             - `question_text`: The text of the question.
@@ -49,20 +47,18 @@ def create_course(thing_to_learn, description):
                 {{
                     "title": "Module 1",
                     "description": "Description of Module 1",
-                    "position": 1,
                     "lessons": [
                         {{
                             "title": "Lesson 1",
+                            "description": "Description of Lesson 1"
                             "content": [
                                 {{"type": "text", "value": "Lesson 1 Content"}},
                                 {{"type": "text", "value": "Lesson 1 Content"}}    
                             ],
-                            "position": 1,
                             "quizzes": [
                                 {{
                                     "title": "Quiz 1",
                                     "description": "Quiz 1 Description",
-                                    "position": 1,
                                     "questions": [
                                         {{
                                             "question_text": "What is the capital of France?",

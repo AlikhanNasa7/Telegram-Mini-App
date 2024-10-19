@@ -134,7 +134,7 @@ def create_course_background(user_id: int, learning_field: str, description: str
         # Generate course JSON (Replace this with your actual LLM integration)
         course_JSON = course_creator.create_course(learning_field, description)
         course_data = json.loads(course_JSON)
-        logger.info(f"Generated course data: {course_data}")
+        logger.info(f"Generated course data: {json.dumps(course_data, indent=4)}")
 
         # Create course from JSON
         create_course_from_json(course_data, db, user_id)
@@ -151,208 +151,82 @@ def create_course_background(user_id: int, learning_field: str, description: str
         db.close()
 
 
-def create_course_from_json(json_data: dict, db: Session, user_id: int):
-    """
-    Parses the JSON data and populates the database with the course, modules, lessons, quizzes, and questions.
-    """
+def create_course_from_json(json_data, db: Session, user_id: int):
     try:
-        # Validate and parse course data using Pydantic
-        course_create = CourseCreate(
-            title=json_data["title"],
-            description=json_data["description"],
+        # Validate the input data using CourseCreate
+        course_data = CourseCreate(
+            title=json_data.get("title", "Untitled Course"),
+            description=json_data.get("description", ""),
         )
 
         # Create the course in the database
         course = courses_repository.create_course(
-            db=db, user_id=user_id, course_data=course_create
+            db=db, user_id=user_id, course_data=course_data
         )
-        logger.info(f"Created course: {course}")
 
         # Iterate over modules
-        modules = json_data["modules"]
+        modules = json_data.get("modules", [])
         for module_data in modules:
-            module_create = ModuleCreate(
-                title=module_data["title"],
-                description=module_data["description"],
-                position=module_data["position"],
-                lessons=[],  # Placeholder, actual lessons will be added below
+            module_data_obj = ModuleCreate(
+                title=module_data.get("title", "Untitled Module"),
+                description=module_data.get("description", ""),
             )
 
             module = modules_repository.create_module(
-                db=db, course_id=course.course_id, module_data=module_create
+                db=db, course_id=course.course_id, module_data=module_data_obj
             )
-            logger.info(f"Created module: {module}")
-
             # Iterate over lessons in the module
-            lessons = module_data["lessons"]
+            lessons = module_data.get("lessons", [])
             for lesson_data in lessons:
-                lesson_create = LessonCreate(
-                    title=lesson_data["title"],
-                    description=lesson_data["description"],
-                    content=lesson_data["content"],
-                    position=lesson_data["position"],
-                    quizzes=[],  # Placeholder, actual quizzes will be added below
+                print(json.dumps(lesson_data, indent=4))
+                lesson_data_obj = LessonCreate(
+                    title=lesson_data.get("title", "Untitled Lesson"),
+                    description=lesson_data.get("description", ""),
+                    content=lesson_data.get("content", []),
                 )
 
                 lesson = lessons_repository.create_lesson(
-                    db=db, module_id=module.module_id, lesson_data=lesson_create
+                    db=db, module_id=module.module_id, lesson_data=lesson_data_obj
                 )
-                logger.info(f"Created lesson: {lesson}")
 
                 # Iterate over quizzes in the lesson
-                quizzes = lesson_data["quizzes"]  # Removed trailing comma
+                quizzes = lesson_data.get("quizzes", [])
                 for quiz_data in quizzes:
-                    quiz_create = QuizCreate(
-                        title=quiz_data["title"],
-                        description=quiz_data["description"],
-                        position=quiz_data["position"],
-                        questions=[],  # Placeholder, actual questions will be added below
+                    quiz_data_obj = QuizCreate(
+                        title=quiz_data.get("title", "Untitled Quiz"),
+                        description=quiz_data.get("description", ""),
+                        position=quiz_data.get("position", 1),
                     )
 
                     quiz = quizzes_repository.create_quiz(
-                        db=db, lesson_id=lesson.lesson_id, quiz_data=quiz_create
+                        db=db, lesson_id=lesson.lesson_id, quiz_data=quiz_data_obj
                     )
-                    logger.info(f"Created quiz: {quiz}")
 
                     # Iterate over questions in the quiz
-                    questions = quiz_data["questions"]  # Removed trailing comma
+                    questions = quiz_data.get("questions", [])
                     for question_data in questions:
-                        question_create = QuestionCreate(
-                            question_text=question_data["question_text"],
-                            question_type=question_data["question_type"],
-                            options=question_data["options"],
-                            correct_answer=question_data["correct_answer"],
+                        question_data_obj = QuestionCreate(
+                            question_text=question_data.get("question_text", ""),
+                            question_type=question_data.get("question_type", ""),
+                            options=question_data.get("options", []),
+                            correct_answer=question_data.get("correct_answer", ""),
                         )
 
-                        question = questions_repository.create_question(
-                            db=db, quiz_id=quiz.quiz_id, question_data=question_create
+                        questions_repository.create_question(
+                            db=db, quiz_id=quiz.quiz_id, question_data=question_data_obj
                         )
-                        logger.info(f"Created question: {question}")
 
         # Commit all changes to the database
         db.commit()
-        logger.info("Course generation completed successfully.")
+        return {"detail": "Course created successfully"}
 
     except IntegrityError as e:
         db.rollback()
-        logger.error(f"Integrity error while creating course: {str(e)}")
-        raise e  # Optionally re-raise to be caught in the background task
-    except KeyError as e:
-        db.rollback()
-        logger.error(f"Missing key in JSON data: {str(e)}")
-        raise e  # Optionally re-raise to be caught in the background task
+        raise HTTPException(
+            status_code=400, detail=f"Integrity error while creating course: {str(e)}"
+        )
     except Exception as e:
         db.rollback()
-        logger.error(f"An unexpected error occurred while creating course: {str(e)}")
-        raise e  # Optionally re-raise to be caught in the background task
-
-
-# @router.post("/generate")
-# def generate_course(
-#     user_id: int, learning_field: str, description: str, db: Session = Depends(get_db)
-# ):
-#     if description.strip() == "":
-#         raise HTTPException(status_code=400, detail="Description cannot be empty")
-
-#     if learning_field.strip() == "":
-#         raise HTTPException(status_code=400, detail="Course name cannot be empty")
-
-#     try:
-#         # Generate course JSON
-#         course_JSON = course_creator.create_course(learning_field, description)
-#         course_data = json.loads(course_JSON)
-#         print(course_data)
-#         # Create course from JSON
-#         create_course_from_json(course_data, db, user_id)
-
-#         return {"detail": "Course generated successfully"}
-
-#     except json.JSONDecodeError:
-#         raise HTTPException(
-#             status_code=500, detail="Failed to parse the generated course JSON."
-#         )
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=500, detail=f"An unexpected error occurred: {str(e)}"
-#         )
-
-
-# def create_course_from_json(json_data, db: Session, user_id: int):
-#     try:
-#         # Validate the input data using CourseCreate
-#         course_data = CourseCreate(
-#             title=json_data.get("title", "Untitled Course"),
-#             description=json_data.get("description", ""),
-#         )
-
-#         # Create the course in the database
-#         course = courses_repository.create_course(
-#             db=db, user_id=user_id, course_data=course_data
-#         )
-
-#         # Iterate over modules
-#         modules = json_data.get("modules", [])
-#         for module_data in modules:
-#             module_data_obj = ModuleCreate(
-#                 title=module_data.get("title", "Untitled Module"),
-#                 description=module_data.get("description", ""),
-#             )
-
-#             module = modules_repository.create_module(
-#                 db=db, course_id=course.course_id, module_data=module_data_obj
-#             )
-#             # Iterate over lessons in the module
-#             lessons = module_data.get("lessons", [])
-#             for lesson_data in lessons:
-#                 print(json.dumps(lesson_data, indent=4))
-#                 lesson_data_obj = LessonCreate(
-#                     title=lesson_data.get("title", "Untitled Lesson"),
-#                     description=lesson_data.get("description", ""),
-#                     content=lesson_data.get("content", []),
-#                 )
-
-#                 lesson = lessons_repository.create_lesson(
-#                     db=db, module_id=module.module_id, lesson_data=lesson_data_obj
-#                 )
-
-#                 # Iterate over quizzes in the lesson
-#                 quizzes = lesson_data.get("quizzes", [])
-#                 for quiz_data in quizzes:
-#                     quiz_data_obj = QuizCreate(
-#                         title=quiz_data.get("title", "Untitled Quiz"),
-#                         description=quiz_data.get("description", ""),
-#                         position=quiz_data.get("position", 1),
-#                     )
-
-#                     quiz = quizzes_repository.create_quiz(
-#                         db=db, lesson_id=lesson.lesson_id, quiz_data=quiz_data_obj
-#                     )
-
-#                     # Iterate over questions in the quiz
-#                     questions = quiz_data.get("questions", [])
-#                     for question_data in questions:
-#                         question_data_obj = QuestionCreate(
-#                             question_text=question_data.get("question_text", ""),
-#                             question_type=question_data.get("question_type", ""),
-#                             options=question_data.get("options", []),
-#                             correct_answer=question_data.get("correct_answer", ""),
-#                         )
-
-#                         questions_repository.create_question(
-#                             db=db, quiz_id=quiz.quiz_id, question_data=question_data_obj
-#                         )
-
-#         # Commit all changes to the database
-#         db.commit()
-#         return {"detail": "Course created successfully"}
-
-#     except IntegrityError as e:
-#         db.rollback()
-#         raise HTTPException(
-#             status_code=400, detail=f"Integrity error while creating course: {str(e)}"
-#         )
-#     except Exception as e:
-#         db.rollback()
-#         raise HTTPException(
-#             status_code=500, detail=f"An unexpected error occurred: {str(e)}"
-#         )
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {str(e)}"
+        )
