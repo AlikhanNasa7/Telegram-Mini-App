@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from ..repositories.users import UsersRepository
 from ..schemas.users import UserOut, UserCreate
@@ -41,11 +41,15 @@ def get_created_courses_of_user(
     user_id: int,
     db: Session = Depends(get_db),
 ):
+    user = users_repository.get_user_by_id(db, user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     total_count, courses = users_repository.get_courses_created_by_user(
         db, user_id=user_id
     )
     if not courses:
-        raise HTTPException(status_code=404, detail="No courses found")
+        return Response(status_code=200, content="No courses found")
     return Courses(total=total_count, objects=courses)
 
 
@@ -64,9 +68,7 @@ def get_enrolled_courses_of_user(
     enrolled_courses = user.enrolled_courses
 
     if not enrolled_courses:
-        raise HTTPException(
-            status_code=404, detail="No enrolled courses found for this user"
-        )
+        return Response(status_code=200, content="No courses found")
 
     # Print each enrolled course for debugging purposes
     for course in enrolled_courses:

@@ -1,5 +1,5 @@
 from sqlite3 import IntegrityError
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from app.schemas.lessons import LessonCreate
@@ -60,7 +60,7 @@ def get_courses(
 ):
     total_count, courses = courses_repository.get_all_courses(db, user_id)
     if not courses:
-        raise HTTPException(status_code=404, detail="No courses found")
+        return Response(status_code=200, content="No courses found")
     return Courses(total=total_count, objects=courses)
 
 
@@ -80,7 +80,7 @@ def enroll_to_course(course_id: int, user_id: int, db: Session = Depends(get_db)
 
 
 @router.get("/{course_id}/disenroll")
-def enroll_to_course(course_id: int, user_id: int, db: Session = Depends(get_db)):
+def disenroll_to_course(course_id: int, user_id: int, db: Session = Depends(get_db)):
     courses_repository.disenroll_from_course(user_id, course_id, db)
     return f"You have disenrolled from the course with id: {course_id}"
 

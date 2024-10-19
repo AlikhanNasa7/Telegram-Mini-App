@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from ..repositories.quizzes import QuizzesRepository
 from ..schemas.quizzes import QuizCreate, QuizUpdate, QuizOut
@@ -22,7 +22,8 @@ def get_lesson_quizzes(
     """
     quizzes = quizzes_repository.get_lesson_quizzes(db, lesson_id)
     if not quizzes:
-        raise HTTPException(status_code=404, detail="No quizzes found in this lesson")
+        return Response(status_code=200, content="No quizzes found")
+
     return quizzes
 
 

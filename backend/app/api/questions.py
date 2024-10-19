@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from ..repositories.questions import QuestionsRepository
 from ..schemas.questions import QuestionCreate, QuestionUpdate, QuestionOut
@@ -16,7 +16,7 @@ def get_quiz_questions(
 ):
     questions = questions_repository.get_quiz_questions(db, quiz_id)
     if not questions:
-        raise HTTPException(status_code=404, detail="No questions found in this quiz")
+        return Response(status_code=200, content="No modules found")
     return questions
 
 

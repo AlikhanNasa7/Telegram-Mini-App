@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from ..repositories.lessons import LessonsRepository
 from ..schemas.lessons import LessonCreate, LessonUpdate, LessonOut
@@ -13,7 +13,7 @@ lessons_repository = LessonsRepository()
 def get_module_lessons(module_id: int, db: Session = Depends(get_db)):
     lessons = lessons_repository.get_module_lessons(db, module_id)
     if not lessons:
-        raise HTTPException(status_code=404, detail="No lessons found in this module")
+        return Response(status_code=200, content="No modules found")
     return lessons
 
 
