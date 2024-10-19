@@ -20,16 +20,16 @@ def create_course(thing_to_learn, description):
             - `description`: A brief description of the course (summarize "{description}").
             - `modules`: A list of module objects.
         - Module:
-            - `title`: The title of the module.
+            - `title`: The title of the module. Make it short 2-3 words. Don't use word Module
             - `description`: A brief description of the module.
             - `lessons`: A list of lesson objects.
         - Lesson:
-            - `title`: The title of the lesson.
+            - `title`: The title of the lesson Make it short 2-3 words. Don't use word Lesson
             - `description`: A brief description of the lesson
             - `content`: A list of content objects (e.g., text, images, videos). (You use text only). You need to include text that will teach student and then ask his knowledge with quizzes. You can write a lot here, this is kind of wikipedia article. 2-4 big paragraphs. Make it as useful as possible.
             - `quizzes`: A list of quiz objects.
         - Quiz:
-            - `title`: The title of the quiz.
+            - `title`: The title of the quiz Make it short 2-3 words. Don't use word Quiz
             - `description`: A brief description of the quiz content.
             - `questions`: A list of question objects.
         - Question:
