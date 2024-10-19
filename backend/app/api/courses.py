@@ -20,8 +20,6 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 import logging
-from ..llm import unsplash
-import random
 
 
 router = APIRouter()
@@ -199,22 +197,11 @@ def create_course_from_json(json_data, db: Session, user_id: int):
             lessons = module_data.get("lessons", [])
             for lesson_data in lessons:
                 print(json.dumps(lesson_data, indent=4))
-                content_dict = lesson_data.get("content", {})
-                unsplash_images = unsplash.search_unsplash_images(course.title)
-
-                content_dict["image_url"] = unsplash_images.pop()
-                for i in range(3):
-                    content_dict.append(
-                        {
-                            "type": "image",
-                            "value": unsplash_images.pop(),
-                        }
-                    )
 
                 lesson_data_obj = LessonCreate(
                     title=lesson_data.get("title", "Untitled Lesson"),
                     description=lesson_data.get("description", ""),
-                    content=content_dict,
+                    content=lesson_data.get("content", []),
                 )
 
                 lesson = lessons_repository.create_lesson(
