@@ -6,17 +6,15 @@ from ..database.models import Quiz
 from ..schemas.quizzes import QuizCreate, QuizUpdate
 
 
-class QuizzesRepository:
-    def get_lesson_quizzes(self, db: Session, lesson_id: int) -> list[Quiz]:
-        quizzes = db.query(Quiz).filter(Quiz.lesson_id == lesson_id).all()
-        if not quizzes:
-            raise HTTPException(
-                status_code=404, detail="No quizzes found in this lesson"
-            )
-        return quizzes
+from sqlalchemy.orm import Session
+from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
 
-    def get_quiz(self, db: Session, quiz_id: int) -> Quiz:
-        quiz = db.query(Quiz).filter(Quiz.quiz_id == quiz_id).first()
+
+class QuizzesRepository:
+
+    def get_lesson_quiz(self, db: Session, lesson_id: int) -> Quiz:
+        quiz = db.query(Quiz).filter(Quiz.lesson_id == lesson_id).first()
         if not quiz:
             raise HTTPException(status_code=404, detail="Quiz not found")
         return quiz
@@ -28,22 +26,19 @@ class QuizzesRepository:
         quiz_data: QuizCreate,
     ) -> Quiz:
         try:
-            # Get the maximum position value for the quizzes in the lesson
-            max_position = (
-                db.query(func.max(Quiz.position))
-                .filter(Quiz.lesson_id == lesson_id)
-                .scalar()
-            )
+            # Check if a quiz already exists for the lesson
+            existing_quiz = db.query(Quiz).filter(Quiz.lesson_id == lesson_id).first()
+            if existing_quiz:
+                raise HTTPException(
+                    status_code=400, detail="A quiz already exists for this lesson"
+                )
 
-            # Set the position as max_position + 1, or 1 if no quizzes exist
-            new_position = (max_position or 0) + 1
-
-            # Create the new quiz with the calculated position
+            # Create the new quiz
             new_quiz = Quiz(
                 lesson_id=lesson_id,
                 title=quiz_data.title,
                 description=quiz_data.description,
-                position=new_position,
+                position=1,  # Position is set to 1 because only one quiz is allowed per lesson
             )
             db.add(new_quiz)
             db.commit()

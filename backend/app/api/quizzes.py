@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
+
+from app.repositories.questions import QuestionsRepository
+from app.schemas.questions import QuestionOut
 from ..repositories.quizzes import QuizzesRepository
 from ..schemas.quizzes import QuizCreate, QuizUpdate, QuizOut
 from ..database.base import get_db
@@ -8,40 +11,36 @@ from ..schemas.user_progress import UserProgressCreate
 
 router = APIRouter()
 quizzes_repository = QuizzesRepository()
+questions_repository = QuestionsRepository()
 progress_repository = UserProgressRepository()
 
 
-# Get all quizzes within a lesson
-@router.get("/lessons/{lesson_id}/quizzes", response_model=list[QuizOut])
-def get_lesson_quizzes(
+@router.get("/lessons/{lesson_id}/quiz", response_model=QuizOut)
+def get_quiz(
     lesson_id: int,
     db: Session = Depends(get_db),
 ):
-    """
-    Get all quizzes within a specific lesson.
-    """
-    quizzes = quizzes_repository.get_lesson_quizzes(db, lesson_id)
-    if not quizzes:
-        return Response(status_code=200, content="No quizzes found")
+    quiz = quizzes_repository.get_lesson_quiz(db, lesson_id)
 
-    return quizzes
+    questions = questions_repository.get_quiz_questions(db, quiz.quiz_id)
 
+    questions_out = [QuestionOut.from_orm(question) for question in questions]
 
-# Get a specific quiz by quiz_id
-@router.get("/quizzes/{quiz_id}", response_model=QuizOut)
-def get_quiz(
-    quiz_id: int,
-    db: Session = Depends(get_db),
-):
-    """
-    Get a specific quiz within a lesson.
-    """
-    quiz = quizzes_repository.get_user_lesson_quiz(db, quiz_id)
-    return quiz
+    # Create a QuizOut object using the quiz data and associated questions
+    quiz_out = QuizOut(
+        quiz_id=quiz.quiz_id,
+        lesson_id=quiz.lesson_id,
+        title=quiz.title,
+        description=quiz.description,
+        position=quiz.position,
+        questions=questions_out,
+    )
+
+    return quiz_out
 
 
 # Create a new quiz in a lesson
-@router.post("/lessons/{lesson_id}/quizzes", response_model=QuizOut)
+@router.post("/lessons/{lesson_id}/quiz", response_model=QuizOut)
 def create_quiz(
     lesson_id: int,
     quiz_data: QuizCreate,
@@ -55,7 +54,7 @@ def create_quiz(
 
 
 # Update a quiz
-@router.patch("/quizzes/{quiz_id}", response_model=QuizOut)
+@router.patch("/quiz/{quiz_id}", response_model=QuizOut)
 def update_quiz(
     quiz_id: int,
     quiz_data: QuizUpdate,
@@ -69,7 +68,7 @@ def update_quiz(
 
 
 # Delete a quiz
-@router.delete("/quizzes/{quiz_id}")
+@router.delete("/quiz/{quiz_id}")
 def delete_quiz(
     quiz_id: int,
     db: Session = Depends(get_db),

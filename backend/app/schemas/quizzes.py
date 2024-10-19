@@ -1,5 +1,7 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
+
+from app.schemas.questions import QuestionOut
 
 
 class QuizCreate(BaseModel):
@@ -27,6 +29,8 @@ class QuizOut(BaseModel):
     title: str
     description: Optional[str]
     position: Optional[int]
+    questions: List[QuestionOut]
 
     class Config:
         orm_mode = True
+        from_attributes = True

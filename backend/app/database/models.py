@@ -84,9 +84,7 @@ class Lesson(Base):
     audio_file_path = Column(String(255), nullable=True)
 
     module = relationship("Module", back_populates="lessons")
-    quizzes = relationship(
-        "Quiz", back_populates="lesson", cascade="all, delete-orphan"
-    )
+    quiz = relationship("Quiz", back_populates="lesson", cascade="all, delete-orphan")
     progress_records = relationship("UserProgress", back_populates="lesson")
 
     def __repr__(self):
@@ -102,7 +100,7 @@ class Quiz(Base):
     description = Column(Text)
     position = Column(Integer)
 
-    lesson = relationship("Lesson", back_populates="quizzes")
+    lesson = relationship("Lesson", back_populates="quiz")
     questions = relationship(
         "Question", back_populates="quiz", cascade="all, delete-orphan"
     )
