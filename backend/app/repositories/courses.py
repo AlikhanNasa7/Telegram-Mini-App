@@ -3,6 +3,10 @@ from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from ..database.models import Course
 from ..schemas.courses import CourseCreate, CourseUpdate, CourseOut
+from .course_enrollment import CourseEnrollmentRepository
+
+
+course_enrollment_repository = CourseEnrollmentRepository()
 
 
 class CoursesRepository:
@@ -13,11 +17,23 @@ class CoursesRepository:
         courses_out = [CourseOut.from_orm(course) for course in db_courses]
         return total_count, courses_out
 
-    def get_all_courses(self, db: Session):
+    def get_all_courses(self, db: Session, user_id: int):
         query = db.query(Course)
         total_count = query.count()
         db_courses = query.all()
-        courses_out = [CourseOut.from_orm(course) for course in db_courses]
+
+        # Check enrollment status for each course
+        courses_out = [
+            CourseOut.from_orm(course).copy(
+                update={
+                    "is_enrolled": course_enrollment_repository.is_course_enrollment_exist(
+                        user_id, course.course_id, db
+                    )
+                }
+            )
+            for course in db_courses
+        ]
+
         return total_count, courses_out
 
     def get_course_by_id(self, db: Session, course_id: int) -> Course:
@@ -78,6 +94,26 @@ class CoursesRepository:
             db.commit()
         except IntegrityError:
             db.rollback()
+            raise HTTPException(
+                status_code=400, detail="Integrity error while deleting course"
+            )
+
+    def enroll_to_course(self, user_id, course_id, db: Session):
+        try:
+            course_enrollment_repository.create_course_enrollment(
+                user_id, course_id, db
+            )
+        except IntegrityError:
+            raise HTTPException(
+                status_code=400, detail="Integrity error while deleting course"
+            )
+
+    def disenroll_from_course(self, user_id, course_id, db: Session):
+        try:
+            course_enrollment_repository.delete_course_enrollment(
+                user_id, course_id, db
+            )
+        except IntegrityError:
             raise HTTPException(
                 status_code=400, detail="Integrity error while deleting course"
             )

@@ -26,6 +26,7 @@ class CourseOut(BaseModel):
     user_id: int
     title: str
     description: Optional[str]
+    is_enrolled: bool = False
     created_at: datetime
     updated_at: datetime
 

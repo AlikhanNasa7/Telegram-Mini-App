@@ -8,12 +8,13 @@ from ..schemas.courses import CourseOut
 
 class UsersRepository:
     def get_user_by_id(self, db: Session, user_id: int) -> User:
+        print(user_id)
         user = db.query(User).filter(User.user_id == user_id).first()
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            return None
         return user
 
-    def get_courses_by_user_id(self, db: Session, user_id: int):
+    def get_courses_created_by_user(self, db: Session, user_id: int):
         user = db.query(User).filter(User.user_id == user_id).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")

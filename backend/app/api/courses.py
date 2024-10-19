@@ -7,6 +7,8 @@ from app.schemas.modules import ModuleCreate
 from app.schemas.questions import QuestionCreate
 from app.schemas.quizzes import QuizCreate
 from ..repositories.courses import CoursesRepository
+from ..repositories.users import UsersRepository
+from ..repositories.course_enrollment import CourseEnrollmentRepository
 from ..schemas.courses import CourseCreate, CourseUpdate, CourseOut, Courses
 from ..database.base import get_db, SessionLocal
 from ..llm import course_creator
@@ -22,6 +24,7 @@ import logging
 
 router = APIRouter()
 courses_repository = CoursesRepository()
+course_enrollment_repository = CourseEnrollmentRepository()
 # Initialize a ThreadPoolExecutor with a suitable number of workers
 executor = ThreadPoolExecutor(
     max_workers=4
@@ -52,9 +55,10 @@ logger = logging.getLogger(__name__)
 # Get all courses
 @router.get("/", response_model=Courses)
 def get_courses(
+    user_id: int,
     db: Session = Depends(get_db),
 ):
-    total_count, courses = courses_repository.get_all_courses(db)
+    total_count, courses = courses_repository.get_all_courses(db, user_id)
     if not courses:
         raise HTTPException(status_code=404, detail="No courses found")
     return Courses(total=total_count, objects=courses)
@@ -67,6 +71,18 @@ def get_course(course_id: int, db: Session = Depends(get_db)):
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     return course
+
+
+@router.get("/{course_id}/enroll")
+def enroll_to_course(course_id: int, user_id: int, db: Session = Depends(get_db)):
+    courses_repository.enroll_to_course(user_id, course_id, db)
+    return f"You have enrolled to the course with id: {course_id}"
+
+
+@router.get("/{course_id}/disenroll")
+def enroll_to_course(course_id: int, user_id: int, db: Session = Depends(get_db)):
+    courses_repository.disenroll_from_course(user_id, course_id, db)
+    return f"You have disenrolled from the course with id: {course_id}"
 
 
 # Create a new course
@@ -163,6 +179,8 @@ def create_course_from_json(json_data, db: Session, user_id: int):
         course = courses_repository.create_course(
             db=db, user_id=user_id, course_data=course_data
         )
+
+        courses_repository.enroll_to_course(user_id, course.course_id, db)
 
         # Iterate over modules
         modules = json_data.get("modules", [])

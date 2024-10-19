@@ -155,13 +155,14 @@ class UserProgress(Base):
 class CourseEnrollment(Base):
     __tablename__ = "course_enrollments"
 
-    enrollment_id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.user_id"))
-    course_id = Column(Integer, ForeignKey("courses.course_id"))
+    # Define a composite primary key using both user_id and course_id
+    user_id = Column(Integer, ForeignKey("users.user_id"), primary_key=True)
+    course_id = Column(Integer, ForeignKey("courses.course_id"), primary_key=True)
     enrollment_date = Column(DateTime, default=datetime.utcnow)
 
+    # Define relationships
     user = relationship("User", back_populates="enrolled_courses")
     course = relationship("Course", back_populates="enrolled_users")
 
     def __repr__(self):
-        return f"<CourseEnrollment(enrollment_id={self.enrollment_id}, user_id={self.user_id}, course_id={self.course_id})>"
+        return f"<CourseEnrollment(user_id={self.user_id}, course_id={self.course_id})>"
