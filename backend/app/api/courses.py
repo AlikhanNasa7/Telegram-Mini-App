@@ -116,6 +116,7 @@ def delete_course(user_id: int, course_id: int, db: Session = Depends(get_db)):
     courses_repository.delete_course(db, user_id, course_id)
     return {"detail": "Course deleted successfully"}
 
+users_repository = UsersRepository()
 
 @router.post("/generate")
 async def generate_course(
@@ -131,6 +132,9 @@ async def generate_course(
 
     if not learning_field.strip():
         raise HTTPException(status_code=400, detail="Learning field cannot be empty")
+
+    if not users_repository.check_balance(db, user_id):
+        raise HTTPException(status_code=400, detail="Not enough balance")
 
     # Schedule the background task
     loop = asyncio.get_event_loop()
@@ -154,6 +158,8 @@ def create_course_background(user_id: int, learning_field: str, description: str
         course_data = json.loads(course_JSON)
         logger.info(f"Generated course data: {json.dumps(course_data, indent=4)}")
         create_course_from_json(course_data, db, user_id)
+        
+        users_repository.decrement_balance(db, user_id)
 
     except json.JSONDecodeError:
         logger.error("Failed to parse the generated course JSON.")
