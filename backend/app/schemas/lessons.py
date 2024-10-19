@@ -33,6 +33,7 @@ class LessonOut(BaseModel):
     position: Optional[int]
     content: Optional[List[Any]]
     image_url: Optional[Any]
+    audio_file_path: Optional[Any]
 
     class Config:
         orm_mode = True

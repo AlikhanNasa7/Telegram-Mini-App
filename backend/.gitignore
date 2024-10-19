@@ -108,3 +108,5 @@ dmypy.json
 
 # FastAPI specific
 *.db
+
+audio_files/

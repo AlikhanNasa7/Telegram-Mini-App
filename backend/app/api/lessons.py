@@ -1,4 +1,6 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from ..repositories.lessons import LessonsRepository
 from ..schemas.lessons import LessonCreate, LessonUpdate, LessonOut
@@ -60,3 +62,23 @@ def delete_lesson(
 ):
     lessons_repository.delete_lesson(db, module_id, lesson_id)
     return {"detail": "Lesson deleted successfully"}
+
+
+@router.get("/lessons/{lesson_id}/audio", response_class=FileResponse)
+def get_audio_for_lesson(
+    lesson_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Получает аудиофайл для указанного урока.
+    """
+    lesson = lessons_repository.get_module_lesson_by_id(db, lesson_id)
+
+    if not lesson.audio_file_path or not os.path.exists(lesson.audio_file_path):
+        raise HTTPException(status_code=404, detail="Audio file not found")
+
+    return FileResponse(
+        path=lesson.audio_file_path,
+        media_type="audio/mpeg",
+        filename=os.path.basename(lesson.audio_file_path),
+    )

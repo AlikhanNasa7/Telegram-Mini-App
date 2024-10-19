@@ -81,6 +81,7 @@ class Lesson(Base):
     position = Column(Integer)
     content = Column(JSON, nullable=True)
     image_url = Column(String(255), nullable=True)
+    audio_file_path = Column(String(255), nullable=True)
 
     module = relationship("Module", back_populates="lessons")
     quizzes = relationship(

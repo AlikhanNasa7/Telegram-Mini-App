@@ -387,6 +387,7 @@ def create_course_from_json(json_data, db: Session, user_id: int):
                             "description": image_data["title"],
                         }
                     )
+                    images.pop()
 
                 random.shuffle(content_dict)
 

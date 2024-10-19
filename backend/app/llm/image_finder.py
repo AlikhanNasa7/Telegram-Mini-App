@@ -37,4 +37,4 @@ def get_images(keyword: str) -> list[dict]:
         }
         for image_result in image_results
     ]
-    return images[:6]
+    return images[:30]

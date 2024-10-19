@@ -4,6 +4,10 @@ from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from ..database.models import Lesson
 from ..schemas.lessons import LessonCreate, LessonUpdate
+from ..tts.tts import generate_audio
+import uuid
+from typing import Optional
+import asyncio
 
 
 class LessonsRepository:
@@ -45,6 +49,19 @@ class LessonsRepository:
             db.add(new_lesson)
             db.commit()
             db.refresh(new_lesson)
+
+            if new_lesson.content:
+                text = extract_text_from_content(new_lesson.content)
+                if text:
+                    filename = (
+                        f"lesson_{new_lesson.lesson_id}_{uuid.uuid4().hex[:8]}.mp3"
+                    )
+                    audio_path = asyncio.run(
+                        generate_and_save_audio(text, "en-US-GuyNeural", filename)
+                    )
+                    new_lesson.audio_file_path = str(audio_path)
+                    db.commit()
+                    db.refresh(new_lesson)
         except IntegrityError:
             db.rollback()
             raise HTTPException(
@@ -81,3 +98,35 @@ class LessonsRepository:
             raise HTTPException(
                 status_code=400, detail="Integrity error while deleting lesson"
             )
+
+
+def extract_text_from_content(content: list) -> Optional[str]:
+    """
+    Извлекает текст из поля content.
+    Предполагается, что content представляет собой список словарей с ключами 'type' и 'value'.
+    """
+    texts = []
+    for item in content:
+        if isinstance(item, dict) and item.get("type") == "text" and "value" in item:
+            texts.append(item["value"])
+    return " ".join(texts) if texts else None
+
+
+async def generate_and_save_audio(text: str, voice: str, filename: str) -> str:
+    """
+    Генерирует аудиофайл и сохраняет его в файловой системе.
+
+    Args:
+        text (str): Текст для преобразования в речь.
+        voice (str): Выбранный голос для TTS.
+        filename (str): Имя файла для сохранения.
+
+    Returns:
+        str: Путь к сохраненному аудиофайлу.
+    """
+    from ..tts.tts import (
+        generate_audio,
+    )  # Импорт внутри функции для избежания циклических импортов
+
+    audio_path = await generate_audio(text, voice, filename)
+    return audio_path
