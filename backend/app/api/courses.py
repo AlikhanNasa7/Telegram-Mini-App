@@ -66,8 +66,8 @@ def get_courses(
 
 # Get a specific course belonging to the user
 @router.get("/{course_id}", response_model=CourseOut)
-def get_course(course_id: int, db: Session = Depends(get_db)):
-    course = courses_repository.get_course_by_id(db, course_id)
+def get_course(course_id: int, user_id: int, db: Session = Depends(get_db)):
+    course = courses_repository.get_course_by_id(db, course_id, user_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     return course

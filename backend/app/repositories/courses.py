@@ -36,11 +36,23 @@ class CoursesRepository:
 
         return total_count, courses_out
 
-    def get_course_by_id(self, db: Session, course_id: int) -> Course:
+    def get_course_by_id(self, db: Session, course_id: int, user_id: int) -> CourseOut:
+        # Retrieve the course by its ID
         course = db.query(Course).filter(Course.course_id == course_id).first()
         if not course:
             raise HTTPException(status_code=404, detail="Course not found")
-        return course
+
+        # Check if the user is enrolled in the course
+        is_enrolled = course_enrollment_repository.is_course_enrollment_exist(
+            user_id, course_id, db
+        )
+
+        # Create the CourseOut response model and include the is_enrolled field
+        course_out = CourseOut.from_orm(course).copy(
+            update={"is_enrolled": is_enrolled}
+        )
+
+        return course_out
 
     def create_course(
         self, db: Session, user_id: int, course_data: CourseCreate
