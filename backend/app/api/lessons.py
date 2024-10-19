@@ -15,11 +15,27 @@ user_progress_repository = UserProgressRepository()
 
 # Get all lessons within a specific module
 @router.get("/modules/{module_id}/lessons", response_model=list[LessonOut])
-def get_module_lessons(module_id: int, db: Session = Depends(get_db)):
+def get_module_lessons(module_id: int, user_id: int, db: Session = Depends(get_db)):
     lessons = lessons_repository.get_module_lessons(db, module_id)
     if not lessons:
-        return Response(status_code=200, content="No modules found")
-    return lessons
+        return Response(status_code=200, content="No lessons found")
+
+    # Create a list to store the lessons with the `have_passed` field
+    lessons_out = []
+    for lesson in lessons:
+        # Check if the user has progress for the current lesson
+        user_progress = user_progress_repository.get_user_progress(
+            db, user_id, lesson.lesson_id
+        )
+        have_passed = user_progress is not None
+
+        # Create a LessonOut instance and update the `have_passed` field
+        lesson_out = LessonOut.from_orm(lesson).copy(
+            update={"have_passed": have_passed}
+        )
+        lessons_out.append(lesson_out)
+
+    return lessons_out
 
 
 # Get a specific lesson within a module
