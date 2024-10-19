@@ -9,10 +9,10 @@ def create_course(thing_to_learn, description):
         
         Please create a JSON response that adheres to the following requirements:
         - The course should have 1 course object.
-        - The course should include 2 modules.
-        - Each module should contain 2 lessons.
-        - Each lesson should have 2 quizzes.
-        - Each quiz should contain 2 questions.
+        - The course should include 5 modules.
+        - Each module should contain 5 lessons.
+        - Each lesson should have 1 quiz.
+        - Each quiz should contain 3 questions.
 
         The JSON response should have the following fields:
         - Course:
@@ -26,7 +26,7 @@ def create_course(thing_to_learn, description):
         - Lesson:
             - `title`: The title of the lesson Make it short 2-3 words. Don't use word Lesson
             - `description`: A brief description of the lesson
-            - `content`: A list of content objects (e.g., text, images, videos). (You use text only). You need to include text that will teach student and then ask his knowledge with quizzes. You can write a lot here, this is kind of wikipedia article. 2-4 big paragraphs. Make it as useful as possible.
+            - `content`: A list of content objects (e.g., text, image, code(if it is related to the Programming field)). (You use text only). You need to include text that will teach student and then ask his knowledge with quizzes. You can write a lot here, this is kind of wikipedia article. 2-4 big paragraphs. Make it as useful as possible.
             - `quizzes`: A list of quiz objects.
         - Quiz:
             - `title`: The title of the quiz Make it short 2-3 words. Don't use word Quiz
