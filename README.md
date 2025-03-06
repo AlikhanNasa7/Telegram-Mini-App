@@ -171,4 +171,5 @@ You may check endpoints at http://127.0.0.1:8000/docs .
 
 ## Author ##
 Backend Developed by Bekzhan Kimadiyev and Dinmukhamed Albek.
-Fronted Developeb by Dastan Tynyshtyq and Alikhan Nashtay.
+
+Fronted Developed by Dastan Tynyshtyq and Alikhan Nashtay.
